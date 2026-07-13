@@ -1,7 +1,7 @@
 name: Servidor de Minecraft Forge CSM
 
 on:
-  workflow_dispatch: # Botón manual para encenderlo
+  workflow_dispatch:
 
 jobs:
   run-server:
@@ -13,18 +13,19 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Crear Directorio y Descargar Forge
+    - name: Descargar e Instalar Forge 1.20.1
       run: |
         mkdir -p minecraft_server
         cd minecraft_server
-        wget -O forge-installer.jar https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.3.0/forge-1.20.1-47.3.0-installer.jar
-
-    - name: Ejecutar Instalador de Servidor Forge
-      run: |
-        cd minecraft_server
+        # Descargamos el instalador oficial
+        wget -O forge-installer.jar https://minecraftforge.net
+        # Ejecutamos la instalacion del servidor
         java -jar forge-installer.jar --installServer
+        # Aceptamos los terminos de Minecraft (EULA)
         echo "eula=true" > eula.txt
         mkdir -p mods
+        # Le damos permisos de ejecucion al nuevo script de arranque de Forge
+        chmod +x run.sh
 
     - name: Instalar Tunel de Conexión (Playit)
       run: |
@@ -32,8 +33,11 @@ jobs:
         curl -Ao playit https://github.com
         chmod +x playit
 
-    - name: Arrancar Servidor CSM
+    - name: Arrancar Servidor Oficial Forge 1.20.1
       run: |
         cd minecraft_server
         ./playit &
-        java -Xmx6G -Xms6G -jar forge-1.20.1-47.3.0-universal.jar nogui
+        # Editamos los argumentos de memoria para que use 6GB en la máquina de GitHub
+        sed -i 's/-Xmx4G/-Xmx6G/g' user_jvm_args.txt
+        # Arrancamos usando el script oficial de Forge para Linux
+        ./run.sh
