@@ -1,0 +1,33 @@
+name: Servidor de Minecraft Forge CSM
+
+on:
+  workflow_dispatch: # Esto te da un botón para prenderlo cuando tú quieras
+
+jobs:
+  run-server:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configurar Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Descargar e Instalar Servidor Forge 1.20.1
+      run: |
+        mkdir server && cd server
+        wget -O forge.jar https://minecraftforge.net
+        java -jar forge.jar --installServer
+        echo "eula=true" > eula.txt
+        mkdir mods
+
+    - name: Instalar Tunel de Conexion (Playit)
+      run: |
+        curl -Ao playit https://github.com
+        chmod +x playit
+
+    - name: Arrancar Servidor de Minecraft
+      run: |
+        cd server
+        ./../playit &
+        java -Xmx6G -Xms6G -jar forge-1.20.1-47.3.0-universal.jar nogui
